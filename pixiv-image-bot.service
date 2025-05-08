@@ -1,0 +1,12 @@
+[Unit]
+Description=Pixiv Image Bot
+After = network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/srv/pixiv-image-bot
+EnvironmentFile=/srv/pixiv-image-bot/settings
+ExecStart=perl push.pl
+
+[Install]
+WantedBy=multi-user.target

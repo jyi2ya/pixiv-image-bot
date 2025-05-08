@@ -1,0 +1,16 @@
+MOJO_LOG_SHORT=1
+MOJO_INACTIVITY_TIMEOUT=0
+
+DATAFILE=data.json
+SENT_KEEP_RATIO=2
+ONEBOT_API=http://onebot.example.com/endpoint
+ONEBOT_API_TOKEN=TokentokentokeN
+TARGET_GROUP_ID=1234567:9822123
+TIME_BUDGET=432000
+TAGS_BLACKLIST=comic:how_to:cover
+TAGS_BLACKLIST_THRESHOLD=0.9
+DEEPDANBOORU_API=http://deepdanbooru.example.com/tags
+MAX_PUSH_TAGS=5
+
+RSS_URL=https://rakuen.thec.me/PixivRss/
+RSS_CHANNELS=daily-20:original-20

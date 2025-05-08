@@ -1,0 +1,11 @@
+[Unit]
+Description=Pixiv image sync service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/srv/pixiv-image-bot
+EnvironmentFile=/srv/pixiv-image-bot/settings
+ExecStart=/usr/bin/perl /srv/pixiv-image-bot/sync.pl
+
+[Install]
+WantedBy=default.target
