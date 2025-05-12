@@ -78,6 +78,7 @@ sub send_one ($data) {
         }
     }
 
+    $LOG->info("image size: " . (length($image_bytes) / 1024 / 1024) . " MiB");
     my $image_b64 = Mojo::Util::b64_encode $image_bytes;
     my $image_tags = get_image_tags($image_b64);
 
@@ -97,25 +98,27 @@ sub send_one ($data) {
 
     for my $group_id (@TARGET_GROUP_ID) {
         eval {
+            my @payload = (
+                {
+                    type => 'image',
+                    data => {
+                        file => "base64://$image_b64",
+                    }
+                },
+                {
+                    type => 'text',
+                    data => {
+                        text => "\n$tags_text",
+                    },
+                }
+            );
+
             my $resp = $UA->post(
                 Mojo::URL->new($ONEBOT_API)->path('/send_group_msg') => {
                     Authorization => "Bearer $ONEBOT_API_TOKEN",
                 }, json => {
                     group_id => $group_id,
-                    message => [
-                        {
-                            type => 'image',
-                            data => {
-                                file => "base64://$image_b64",
-                            }
-                        },
-                        {
-                            type => 'text',
-                            data => {
-                                text => "\n$tags_text",
-                            },
-                        }
-                    ]
+                    message => \@payload,
                 }
             );
             my $result = $resp->result;
@@ -143,6 +146,7 @@ sub main {
         }
         store_data($DATAFILE, $data);
         my $to_sleep = $TIME_BUDGET / (@{ $data->{queued} } || 1);
+        $to_sleep = 1800 if $to_sleep < 1800;
         $LOG->info("will sleep: $to_sleep");
         sleep $to_sleep;
     }

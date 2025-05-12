@@ -14,14 +14,13 @@ use Mojo::JSON;
 use Mojo::URL;
 use DDP;
 
-my $UA = Mojo::UserAgent->new;
-
 use Env qw/
 $DATAFILE
 $RSS_URL
 @RSS_CHANNELS
 /;
 
+my $UA = Mojo::UserAgent->new;
 my @RSS = map { Mojo::URL->new($RSS_URL)->path($_) } @RSS_CHANNELS;
 
 sub load_data ($path) {
@@ -43,6 +42,7 @@ sub store_data ($path, $data) {
 sub main {
     my $data = load_data($DATAFILE);
     my %marked = map { $_ => undef } @{ $data->{sent} }, @{ $data->{queued} };
+    my @new;
     for my $url (@RSS) {
         my $resp = $UA->get($url);
         my $content = $resp->result->text;
@@ -55,6 +55,7 @@ sub main {
                 for my $image ($entry->find('img')->@*) {
                     my $link = $image->attr('src');
                     if (!exists($marked{$link})) {
+                        push @new, $link;
                         push @{$data->{queued}}, $image->attr('src');
                     }
                 }
@@ -62,6 +63,9 @@ sub main {
         }
     }
     store_data($DATAFILE, $data);
+    for my $link (@new) {
+        my $prefetch_cache = $UA->get($link);
+    }
 }
 
 main unless caller;
