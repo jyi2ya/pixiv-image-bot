@@ -64,21 +64,28 @@ sub send_one ($data) {
     push @{ $data->{sent} }, $to_send;
 
     my $image_result;
-    my $image_bytes;
 
     for my $try (1..3) {
         $LOG->info("try fetching image ($try/3)...");
         $image_result = $UA->get($to_send)->result;
-        $image_bytes = $image_result->body;
         if ($image_result->is_success) {
             $LOG->info("OK");
             last;
         } else {
-            $LOG->warn("failed to get image: $image_bytes");
+            $LOG->warn("failed to get image: " . $image_result->body);
         }
     }
 
-    $LOG->info("image size: " . (length($image_bytes) / 1024 / 1024) . " MiB");
+    die "unable to fetch image" unless $image_result->is_success;
+
+    my $tempfile = Mojo::File::tempfile;
+    $image_result->save_to($tempfile);
+    my $image_raw_size = -s $tempfile;
+    my $image_bytes = `convert $tempfile webp:-`;
+    unlink $tempfile;
+
+    $LOG->info("image raw size: " . ($image_raw_size / 1024 / 1024) . " MiB");
+    $LOG->info("image webp size: " . (length($image_bytes) / 1024 / 1024) . " MiB");
     my $image_b64 = Mojo::Util::b64_encode $image_bytes;
     my $image_tags = get_image_tags($image_b64);
 
